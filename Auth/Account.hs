@@ -30,8 +30,8 @@ postNewAccountR = do
             setMessage $ toHtml $ T.concat errs
             redirect newAccountR
 
-        Right d -> do void $ lift $ createNewCustomAccount d tm
-                      redirect LoginR
+        Right d -> do route <- lift $ createNewCustomAccount d tm
+                      redirect route
 
 -- | The data collected in the new account form.
 data CustomNewAccountData = CustomNewAccountData {
@@ -65,7 +65,7 @@ customNewAccountWidget tm = do
 createNewCustomAccount :: YesodAuthAccount db master
                           => CustomNewAccountData
                           -> (Route Auth -> Route master)
-                          -> HandlerT master IO (UserAccount db)
+                          -> HandlerT master IO (AuthRoute)
 createNewCustomAccount (CustomNewAccountData email name pwd _) tm = do
     muser <- runAccountDB $ loadUser email
     case muser of
@@ -77,12 +77,9 @@ createNewCustomAccount (CustomNewAccountData email name pwd _) tm = do
     hashed <- hashPassword pwd
 
     mnew <- runAccountDB $ addNewUser name email key hashed
-    new <- case mnew of
+    _ <- case mnew of
         Left err -> do setMessage $ toHtml err
                        redirect $ tm newAccountR
         Right x -> return x
 
-    render <- getUrlRender
-    sendVerifyEmail name email $ render $ tm $ verifyR email key
-    setMessageI $ Msg.ConfirmationEmailSent email
-    return new
+    return $ verifyR email key

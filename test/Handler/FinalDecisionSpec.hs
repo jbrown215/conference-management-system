@@ -4,7 +4,4 @@ import TestImport
 
 spec :: Spec
 spec = withApp $ do
-
-    describe "postFinalDecisionR" $ do
-        error "Spec not implemented: postFinalDecisionR"
-
+    return ()

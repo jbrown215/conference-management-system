@@ -135,7 +135,19 @@ test-suite test
     main-is:           Spec.hs
     other-modules:     Handler.CommonSpec
                        Handler.HomeSpec
-                       Handler.ProfileSpec
+                       Handler.AssignPaperSpec
+                       Handler.DownloadSpec
+                       Handler.FinalDecisionSpec
+                       Handler.ProgramChairSpec
+                       Handler.ReadySpec
+                       Handler.ReviewPaperSpec
+                       Handler.ReviewSpec
+                       Handler.SearchSpec
+                       Handler.SearchSuggestSpec
+                       Handler.SetPhaseSpec
+                       Handler.UploadSpec
+                       Handler.ViewReviewSpec
+                       TestTools
                        TestImport
     hs-source-dirs:    test
     ghc-options:       -Wall
@@ -173,3 +185,7 @@ test-suite test
                  , classy-prelude
                  , classy-prelude-yesod
                  , aeson
+                 , yesod-auth-account
+                 , network-uri 
+                 , http-types 
+                 , wai-extra

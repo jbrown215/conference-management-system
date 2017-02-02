@@ -4,7 +4,4 @@ import TestImport
 
 spec :: Spec
 spec = withApp $ do
-
-    describe "postUploadR" $ do
-        error "Spec not implemented: postUploadR"
-
+    return ()

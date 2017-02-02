@@ -6,6 +6,6 @@ database:
   # something like:
   #
   #   database: "_env:MYSQL_DATABASE:conference-management-system_test"
-  database: conference-management-system_test
+  database: conference-management-system_test.sqlite3
 
 auth-dummy-login: true

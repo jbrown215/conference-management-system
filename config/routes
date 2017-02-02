@@ -1,0 +1,20 @@
+/static StaticR Static appStatic
+/auth   AuthR   Auth   getAuth
+
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET
+
+/ HomeR GET
+
+/upload UploadR GET POST
+/download/#PaperId DownloadR GET
+/search/#Text SearchR GET
+/review ReviewR GET
+/review/#ReviewId ReviewPaperR GET POST
+/pc ProgramChairR GET POST
+/assign AssignPaperR POST
+/ready/#PaperId ReadyR POST
+/set-phase/ SetPhaseR POST
+/final-decision/#PaperId/#Bool FinalDecisionR POST
+/search-suggest SearchSuggestR GET
+/see-reviews/#PaperId ViewReviewR GET

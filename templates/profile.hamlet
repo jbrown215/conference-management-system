@@ -1,0 +1,4 @@
+<div .ui.container>
+  <p> This is where information about a user will go. Currently, we do
+      \ not collect this during the registration process.
+  <p> Ideally, we would like to have information such as the user's name and school.

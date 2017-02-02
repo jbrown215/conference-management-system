@@ -1,0 +1,39 @@
+User
+    username Text
+    password ByteString
+    emailAddress Text
+    UniqueUsername emailAddress
+    verified Bool
+    verifyKey Text
+    resetPasswordKey Text
+    reviewer Bool
+    pc Bool
+    deriving Show
+    deriving Eq
+Paper
+    owner UserId 
+    filepath Text 
+    title Text
+    abstract Text
+    content ByteString
+    ready Bool
+    pcAccepted Bool
+    deriving Eq
+    deriving Show
+Author
+    author Text
+    authorUser UserId
+    paper PaperId
+Review
+    paper    PaperId
+    user     UserId
+    status   PaperStatus 
+    comments Text
+Conflict
+    paper PaperId
+    user  UserId
+CurrentPhase
+    phase C.ConferencePhase
+    
+
+ -- By default this file is used in Model.hs (which is imported by Foundation.hs)

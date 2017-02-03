@@ -28,7 +28,8 @@ aToList Nothing = []
 postUploadR :: Handler Html
 postUploadR = do
     reviewerOpts <- Util.reviewerOpts
-    ((result, _), _) <- runFormPost $ uploadForm reviewerOpts
+    (uid, user) <- requireAuthPair
+    ((result, _), _) <- runFormPost $ uploadForm (userEmailAddress user) reviewerOpts
     case result of
         FormSuccess (FileForm fi title a1 a2 a3 a4 abstract mConflicts) -> do
             -- I'm sad that I had to do this, but making a custom field was hard!
@@ -39,7 +40,6 @@ postUploadR = do
                     redirect UploadR
                 False -> do
                     fileBytes <- runResourceT $ fileSource fi $$ sinkLbs
-                    (uid, _user) <- requireAuthPair
                     -- We get the author ids first so that we can fail if some email was incorrect before adding the paper
                     authorIds  <- mapM (getUserForUsername UploadR) authors
                     let authorsAndIds = zip authors authorIds
@@ -62,15 +62,16 @@ postUploadR = do
 getUploadR :: Handler Html
 getUploadR = do
     reviewerOpts <- Util.reviewerOpts
-    (formWidget, formEnctype) <- generateFormPost $ uploadForm reviewerOpts
+    (_uid, user) <- requireAuthPair
+    (formWidget, formEnctype) <- generateFormPost $ uploadForm (userEmailAddress user) reviewerOpts
     defaultLayout $ do
         $(widgetFile "upload")
 
-uploadForm :: [(Text, Key User)] -> Form FileForm
-uploadForm reviewerOpts = renderBootstrap3 BootstrapBasicForm $ FileForm
+uploadForm :: Text -> [(Text, Key User)] -> Form FileForm
+uploadForm email reviewerOpts = renderBootstrap3 BootstrapBasicForm $ FileForm
     <$> fileAFormReq "Choose a file"
     <*> areq textField "Paper Title" Nothing
-    <*> areq (jqueryAutocompleteField SearchSuggestR) "Author Email 1" Nothing
+    <*> areq (jqueryAutocompleteField SearchSuggestR) "Author Email 1" (Just email) 
     <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 2" Nothing
     <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 3" Nothing
     <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 4" Nothing

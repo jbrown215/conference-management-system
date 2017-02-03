@@ -110,13 +110,14 @@ getPapersForReviewer (Entity uid _user) = do
 -- policy sendClient (SELECT *
 --         FROM user
 --         WHERE (known user.pass)
-getUserForUsername :: Text -> Handler (Entity User)
-getUserForUsername userName = do 
+getUserForUsername :: (RedirectUrl site url, YesodPersist site, YesodPersistBackend site ~ SqlBackend) => url -> Text -> HandlerT site IO (Entity User)
+getUserForUsername route userName = do 
     users <- runDB $ selectList [UserEmailAddress ==. userName] []
     case users of
-        [] -> error ("User does not exist: " ++ (T.unpack userName))
         [x] -> return x
-        _ -> error ("Username was not unique: " ++ (T.unpack userName))
+        _ -> do 
+            setMessage $ toHtml ("User does not exist: " ++ userName)
+            redirect route
 
 -- | Gets the papers the currently logged in user was assigned to review.
 -- Lifty/LH: u:User

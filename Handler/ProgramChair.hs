@@ -39,7 +39,7 @@ postProgramChairR = do
     ((addResult, _), _) <- runFormPost addReviewerForm 
     case addResult of
         FormSuccess (AddReviewerForm userName) -> do
-            Entity uid _user <- getUserForUsername userName
+            Entity uid _user <- getUserForUsername ProgramChairR userName
             runDB $ update uid [UserReviewer =. True]
             setMessage "Review Saved"
             redirect ProgramChairR

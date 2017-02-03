@@ -40,11 +40,12 @@ postUploadR = do
                 False -> do
                     fileBytes <- runResourceT $ fileSource fi $$ sinkLbs
                     (uid, _user) <- requireAuthPair
+                    -- We get the author ids first so that we can fail if some email was incorrect before adding the paper
+                    authorIds  <- mapM (getUserForUsername UploadR) authors
+                    let authorsAndIds = zip authors authorIds
                     paperId <- runDB $ insert $ Paper uid (fileName fi)
                             title (unTextarea abstract)
                                  (S.pack . L.unpack $ fileBytes) False False
-                    authorIds  <- mapM getUserForUsername authors
-                    let authorsAndIds = zip authors authorIds
                     _ <- runDB $ mapM (\(author, Entity aUid _a) -> insert_ $ Author author aUid paperId) authorsAndIds
                     case mConflicts of
                         Just conflicts -> do
@@ -69,9 +70,9 @@ uploadForm :: [(Text, Key User)] -> Form FileForm
 uploadForm reviewerOpts = renderBootstrap3 BootstrapBasicForm $ FileForm
     <$> fileAFormReq "Choose a file"
     <*> areq textField "Paper Title" Nothing
-    <*> areq (jqueryAutocompleteField SearchSuggestR) "Author 1" Nothing
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author 2" Nothing
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author 3" Nothing
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author 4" Nothing
+    <*> areq (jqueryAutocompleteField SearchSuggestR) "Author Email 1" Nothing
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 2" Nothing
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 3" Nothing
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 4" Nothing
     <*> areq textareaField "Abstract" Nothing
     <*> aopt (checkboxesFieldList reviewerOpts) "Conflicts" Nothing

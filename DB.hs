@@ -1,3 +1,6 @@
+{-# Language TypeFamilies #-}
+{-# Language OverloadedStrings #-}
+
 module DB where
 
 import Import
@@ -41,10 +44,10 @@ getPapers = do
     (uid, _user) <- requireAuthPair
     papers <- runDB $ selectList [PaperOwner ==. uid] []
     authors <- runDB $ selectList [AuthorAuthorUser ==. uid] []
-    let authoredIds = map (\(Entity _aid author) -> authorPaper author) authors
-    authoredPapers <- mapM (\authoredId -> runDB $ get404 authoredId) authoredIds 
-    let authoredPapersEnts = map (\(a,b) -> Entity a b) (zip authoredIds authoredPapers)
-    return $ L.nub (papers ++ authoredPapersEnts)
+    let authoredIds = Import.map (\(Entity _aid author) -> authorPaper author) authors
+    authoredPapers <- Import.mapM (\authoredId -> runDB $ get404 authoredId) authoredIds 
+    let authoredPapersEnts = Import.map (\(a,b) -> Entity a b) (Import.zip authoredIds authoredPapers)
+    return $ L.nub (papers Import.++ authoredPapersEnts)
 
 -- | Given some Entity Paper, returns the authors for the paper.
 -- Lifty/LH: u:User
@@ -116,7 +119,7 @@ getUserForUsername route userName = do
     case users of
         [x] -> return x
         _ -> do 
-            setMessage $ toHtml ("User does not exist: " ++ userName)
+            setMessage $ toHtml ("User does not exist: " Import.++ userName)
             redirect route
 
 -- | Gets the papers the currently logged in user was assigned to review.
@@ -154,7 +157,7 @@ getPapersToReview = do
 
 -- | SEARCH METHODS
 
--- | A filter for "LIKE" queries in SQL. Unfortunately, this does not come for
+-- | A Import.filter for "LIKE" queries in SQL. Unfortunately, this does not come for
 -- free in Yesod.Persistent as it is backend specific. As a result, we have to
 -- use ugly string literals.
 like :: EntityField a Text -> Text -> Filter a 
@@ -233,9 +236,9 @@ getAllPapers = do
 getAllViewablePapers :: UserId -> Handler [Entity Paper]
 getAllViewablePapers uid = do
     conflicts <- runDB $ selectList [ConflictUser ==. uid] []
-    let conflictIds = map (\(Entity _cid conflict) -> conflictPaper conflict) conflicts
+    let conflictIds = Import.map (\(Entity _cid conflict) -> conflictPaper conflict) conflicts
     papers <- runDB $ selectList [] []
-    return $ filter (\(Entity paperId _paper) -> onotElem paperId conflictIds) papers
+    return $ Import.filter (\(Entity paperId _paper) -> onotElem paperId conflictIds) papers
 
 getReviewsForPaper :: PaperId -> Handler [Entity Review]
 getReviewsForPaper p = runDB $ selectList [ReviewPaper ==. p] []

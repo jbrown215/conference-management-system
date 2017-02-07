@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 module Handler.Ready where
 
 import Import

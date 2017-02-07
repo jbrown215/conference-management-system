@@ -1,3 +1,6 @@
+{-# Language TemplateHaskell #-}
+{-# Language OverloadedStrings #-}
+
 module Handler.ProgramChair where
 
 import Import
@@ -24,7 +27,7 @@ getProgramChairR = do
     reviewers <- getReviewers
     papersForReviewers <- mapM getPapersForReviewer reviewers
     Entity _currentPhaseId currentPhase <- getCurrentPhase
-    let reviewersAndPapers = zip reviewers papersForReviewers
+    let reviewersAndPapers = Import.zip reviewers papersForReviewers
     (formWidget, formEnctype) <- generateFormPost addReviewerForm
     reviewerOpts <- U.reviewerOpts
     paperOpts <- U.paperOpts

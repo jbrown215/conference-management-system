@@ -1,4 +1,4 @@
-import Prelude     (IO)
+import ClassyPrelude.Yesod     (IO)
 import Application (appMain)
 
 main :: IO ()

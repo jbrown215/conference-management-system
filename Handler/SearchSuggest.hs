@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 module Handler.SearchSuggest where
 
 import Import
@@ -7,4 +9,4 @@ getSearchSuggestR :: Handler Value
 getSearchSuggestR = do
         query <- fromMaybe "" <$> lookupGetParam "term"
         users <- getUsersWithName query
-        returnJson ((map (\(Entity _userId user) -> userEmailAddress user) users) :: [Text])
+        returnJson ((Import.map (\(Entity _userId user) -> userEmailAddress user) users) :: [Text])

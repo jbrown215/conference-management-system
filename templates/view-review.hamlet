@@ -3,7 +3,7 @@
         Reviews of #{paperTitle paper}
     <p> The paper may be downloaded <a href=@{DownloadR paperId}>here</a>.
 
-    $if not $ null reviews
+    $if not $ Import.null reviews
                 <table .table >
                     <tr>
                         <th>

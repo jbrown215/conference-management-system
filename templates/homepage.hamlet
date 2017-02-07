@@ -2,7 +2,7 @@
     <h1>
       Uploaded Papers
 
-    $if not $ null authorsAndPapers
+    $if not $ Import.null authorsAndPapers
                 <table .table >
                     <tr>
                         <th>
@@ -40,7 +40,7 @@
     $if isDecisionPhase
         <h1>
             Accepted Papers
-        $if not $ null acceptedAuthorsAndPapers 
+        $if not $ Import.null acceptedAuthorsAndPapers 
                     <table .table >
                         <tr>
                             <th>

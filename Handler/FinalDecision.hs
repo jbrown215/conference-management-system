@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 module Handler.FinalDecision where
 
 import Import

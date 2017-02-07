@@ -12,7 +12,7 @@
     <h1>
       Reviewers
 
-    $if not $ null reviewers
+    $if not $ Import.null reviewers
                 <table .table >
                     <tr>
                         <th>

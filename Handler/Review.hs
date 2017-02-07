@@ -1,3 +1,5 @@
+{-# Language TemplateHaskell #-}
+
 module Handler.Review where
 
 import Import

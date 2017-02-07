@@ -1,3 +1,4 @@
+{-# Language TemplateHaskell #-}
 module Settings.StaticFiles where
 
 import Settings     (appStaticDir, compileTimeAppSettings)

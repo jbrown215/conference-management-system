@@ -1,3 +1,6 @@
+{-# Language OverloadedStrings #-}
+{-# Language TemplateHaskell #-}
+
 module Handler.Home where
 
 import Import
@@ -13,8 +16,8 @@ getHomeR = do
     authorLists <- mapM getAuthorListForPaper papers
     acceptedPapers <- getAcceptedPapers
     acceptedAuthorLists <- mapM getAuthorListForPaper acceptedPapers
-    let authorsAndPapers = zip authorLists papers
-    let acceptedAuthorsAndPapers = zip acceptedAuthorLists acceptedPapers
+    let authorsAndPapers = Import.zip authorLists papers
+    let acceptedAuthorsAndPapers = Import.zip acceptedAuthorLists acceptedPapers
     defaultLayout $ do
-        setTitle . toHtml $ userUsername user <> "'s User page"
+        setTitle Import.. toHtml $ userUsername user <> "'s User page"
         $(widgetFile "homepage")

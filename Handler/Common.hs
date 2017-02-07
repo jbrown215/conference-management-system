@@ -1,4 +1,7 @@
 -- | Common handler functions.
+{-# Language OverloadedStrings #-}
+{-# Language TemplateHaskell #-}
+
 module Handler.Common where
 
 import Data.FileEmbed (embedFile)

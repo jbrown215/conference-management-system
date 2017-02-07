@@ -1,3 +1,10 @@
+{-# Language TemplateHaskell #-}
+{-# Language OverloadedStrings #-}
+{-# Language ViewPatterns #-}
+{-# Language MultiParamTypeClasses #-}
+{-# Language TypeFamilies #-}
+{-# Language FlexibleInstances #-}
+
 module Foundation where
 
 import Import.NoFoundation
@@ -130,7 +137,7 @@ instance Yesod App where
 
         let mItemsReviewer = case muser of 
                         Nothing -> mItems 
-                        Just (_uid, user) -> if (userReviewer user) then mItems ++
+                        Just (_uid, user) -> if (userReviewer user) then mItems Import.NoFoundation.++
                             [NavbarLeft $ MenuItem
                                 { menuItemLabel = "Review"
                                 , menuItemRoute = ReviewR 
@@ -139,7 +146,7 @@ instance Yesod App where
 
         let menuItems = case muser of 
                             Nothing -> mItemsReviewer
-                            Just (_uid, user) -> if (userPc user) then mItemsReviewer ++
+                            Just (_uid, user) -> if (userPc user) then mItemsReviewer Import.NoFoundation.++
                                 [NavbarLeft $ MenuItem
                                     { menuItemLabel = "Program Chair"
                                     , menuItemRoute = ProgramChairR
@@ -198,13 +205,13 @@ instance Yesod App where
             minifym
             genFileName
             staticDir
-            (StaticR . flip StaticRoute [])
+            (StaticR Import.NoFoundation.. flip StaticRoute [])
             ext
             mime
             content
       where
         -- Generate a unique filename based on the content itself
-        genFileName lbs = "autogen-" ++ base64md5 lbs
+        genFileName lbs = "autogen-" Import.NoFoundation.++ base64md5 lbs
 
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
@@ -213,7 +220,7 @@ instance Yesod App where
             || level == LevelWarn
             || level == LevelError
 
-    makeLogger = return . appLogger
+    makeLogger = return Import.NoFoundation.. appLogger
 
 -- Search Bar Form
 searchForm :: Html -> MForm Handler (FormResult Text, Widget)
@@ -259,7 +266,7 @@ instance YesodAuth App where
     -- You can add other plugins like Google Email, email or OAuth here
     authPlugins app = [
                       accountPlugin
-                      ] ++ extraAuthPlugins
+                      ] Import.NoFoundation.++ extraAuthPlugins
         -- Enable authDummy login if enabled.
         where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 
@@ -291,14 +298,14 @@ instance AccountSendEmail App
     sendVerifyEmail user email url = do
     liftIO $ sendEmail email
                   "Confirm your account"
-                  ("Hi " ++ user ++ ",\n\nPlease click this link \
-                   \ to confirm your account:\n" ++ url)
+                  ("Hi " Import.NoFoundation.++ user Import.NoFoundation.++ ",\n\nPlease click this link \
+                   \ to confirm your account:\n" Import.NoFoundation.++ url)
     where
     sendNewPasswordEmail user email url = do
     liftIO $ sendEmail email
                   "Reset your password"
-                  ("Hi " ++ user ++ ",\n\nPlease click this link \
-                   \ to reset your password:\n" ++ url)
+                  ("Hi " Import.NoFoundation.++ user Import.NoFoundation.++ ",\n\nPlease click this link \
+                   \ to reset your password:\n" Import.NoFoundation.++ url)
 
 instance YesodJquery App
 
@@ -412,8 +419,8 @@ isReviewPaperAuthenticated r = do
 isAuthorOnPaper :: UserId -> PaperId -> Handler Bool
 isAuthorOnPaper uid p = do
     authors <- runDB $ selectList [AuthorPaper ==. p] []
-    let authorIds = map (\(Entity _aid author) -> authorAuthorUser author) authors
-    return $ elem uid authorIds
+    let authorIds = Import.NoFoundation.map (\(Entity _aid author) -> authorAuthorUser author) authors
+    return $ Import.NoFoundation.elem uid authorIds
 
 -- | Helper function for determining if a user is the reviewer for the given review id.
 isReviewerForId:: UserId -> ReviewId -> Handler Bool
@@ -425,8 +432,8 @@ isReviewerForId uid r = do
 isReviewerOnPaper :: UserId -> PaperId -> Handler Bool
 isReviewerOnPaper u p = do
     reviewEnts <- runDB $ selectList [ReviewPaper ==. p] []
-    let reviewerIds = map (\(Entity _rid review) -> reviewUser review) reviewEnts 
-    return $ elem u reviewerIds 
+    let reviewerIds = Import.NoFoundation.map (\(Entity _rid review) -> reviewUser review) reviewEnts 
+    return $ Import.NoFoundation.elem u reviewerIds 
 
 -- | Only authors and PC chair can see who is an author until decision phase.
 canViewAuthors :: Entity User -> PaperId -> Handler Bool

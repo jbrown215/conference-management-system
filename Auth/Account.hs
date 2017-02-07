@@ -1,3 +1,9 @@
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE FlexibleContexts      #-}
+
 module Auth.Account where
 
 import Import.NoFoundation
@@ -69,7 +75,7 @@ createNewCustomAccount :: YesodAuthAccount db master
 createNewCustomAccount (CustomNewAccountData email name pwd _) tm = do
     muser <- runAccountDB $ loadUser email
     case muser of
-        Just _ -> do setMessageI $ email ++ " already exists."
+        Just _ -> do setMessageI $ email Import.NoFoundation.++ " already exists."
                      redirect $ tm newAccountR
         Nothing -> return ()
 

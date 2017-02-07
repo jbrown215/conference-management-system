@@ -1,6 +1,6 @@
 <div .ui.container>
     <h1> Paper Search Results for "#{text}"
-    $if not $ null papersByTitle
+    $if not $ Import.null papersByTitle
       <h2> Searches Matching Paper Titles
       <table .table>
             $forall (Entity paperId paper) <- papersByTitle
@@ -8,7 +8,7 @@
                   <td>
                       <a href=@{DownloadR paperId}>
                           #{paperTitle paper}
-    $if not $ null papersByAbstract
+    $if not $ Import.null papersByAbstract
       <h2> Searches Matching Paper Abstracts
       <table .table>
             $forall (Entity paperId paper) <- papersByAbstract
@@ -16,7 +16,7 @@
                   <td>
                       <a href=@{DownloadR paperId}>
                           #{paperTitle paper}
-    $if not $ null papersByAuthor
+    $if not $ Import.null papersByAuthor
       <h2> Searches Matching Paper Authors
       <table .table>
             $forall (E.Value paperId, E.Value title, E.Value _filepath, E.Value _abstract) <- papersByAuthor

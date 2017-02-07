@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 module Handler.SetPhase where
 
 import Import

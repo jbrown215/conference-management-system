@@ -1,3 +1,5 @@
+{-# Language TemplateHaskell #-}
+
 module Handler.Search where
 
 import Import

@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 module Handler.AssignPaper where
 
 import Import

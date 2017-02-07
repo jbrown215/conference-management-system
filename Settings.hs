@@ -1,4 +1,8 @@
 {-# Language CPP #-}
+{-# Language TemplateHaskell #-}
+{-# Language RecordWildCards #-}
+{-# Language OverloadedStrings #-}
+
 -- | Settings are centralized, as much as possible, into this file. This
 -- includes database connection settings, static file locations, etc.
 -- In addition, you can configure a number of different aspects of Yesod
@@ -120,7 +124,7 @@ configSettingsYmlBS = $(embedFile configSettingsYml)
 
 -- | @config/settings.yml@, parsed to a @Value@.
 configSettingsYmlValue :: Value
-configSettingsYmlValue = either Exception.throw id
+configSettingsYmlValue = either Exception.throw ClassyPrelude.Yesod.id
                        $ decodeEither' configSettingsYmlBS
 
 -- | A version of @AppSettings@ parsed at compile time from @config/settings.yml@.

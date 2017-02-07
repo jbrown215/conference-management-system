@@ -1,5 +1,9 @@
 {-# LANGUAGE CPP                  #-}
 {-# LANGUAGE RankNTypes           #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Application
     ( getApplicationDev
@@ -105,7 +109,7 @@ makeFoundation development appSettings = do
 
     where
         formatParams :: [(Text, Text)] -> ByteString
-        formatParams = encodeUtf8 . T.unwords . map toKeyValue
+        formatParams = encodeUtf8 Import.. T.unwords Import.. Import.map toKeyValue
 
 toKeyValue :: (Text, Text) -> Text
 toKeyValue (k, v) = k `T.append` "=" `T.append` v
@@ -144,7 +148,7 @@ warpSettings foundation =
             $(qLocation >>= liftLoc)
             "yesod"
             LevelError
-            (toLogStr $ "Exception from Warp: " ++ show e))
+            (toLogStr $ "Exception from Warp: " Import.++ show e))
       defaultSettings
 
 -- | For yesod devel, return the Warp settings and WAI Application.
@@ -209,4 +213,4 @@ handler h = getAppSettings >>= makeFoundation False >>= flip unsafeHandler h
 
 -- | Run DB queries
 db :: ReaderT SqlBackend (HandlerT App IO) a -> IO a
-db = handler . runDB
+db = handler Import.. runDB

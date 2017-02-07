@@ -1,6 +1,6 @@
 <div .ui.container>
     <h1> Papers to Review
-    $if not $ null papers 
+    $if not $ Import.null papers 
                 <table .table >
                     <tr>
                         <th>
@@ -25,7 +25,7 @@
 
 <div .ui.container>
     <h1> All Papers Submitted (not for you to review ;])
-    $if not $ null allPapers 
+    $if not $ Import.null allPapers 
                 <table .table >
                     <tr>
                         <th>

@@ -1,4 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Model where
 
@@ -6,6 +11,7 @@ import ClassyPrelude.Yesod
 import Database.Persist.Quasi
 import Yesod.Auth.Account
 import Data.PaperStatus
+import qualified Data.Text as T
 import qualified Data.ConferencePhase as C
 
 -- You can define all of your database entities in the entities file.
@@ -25,4 +31,4 @@ instance PersistUserCredentials User where
     userResetPwdKeyF = UserResetPasswordKey
     uniqueUsername = UniqueUsername
 
-    userCreate name email key pwd = User name pwd email False key "" False False
+    userCreate name email key pwd = User name pwd email False key (T.pack "") False False

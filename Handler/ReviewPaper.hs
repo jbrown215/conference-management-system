@@ -1,3 +1,6 @@
+{-# Language TemplateHaskell #-}
+{-# Language OverloadedStrings #-}
+
 module Handler.ReviewPaper where
 
 import Import

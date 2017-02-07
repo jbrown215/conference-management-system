@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Handler.Upload where
 
 import Import
@@ -33,7 +35,7 @@ postUploadR = do
     case result of
         FormSuccess (FileForm fi title a1 a2 a3 a4 abstract mConflicts) -> do
             -- I'm sad that I had to do this, but making a custom field was hard!
-            let authors = [a1] ++ (aToList a2) ++ (aToList a3) ++ (aToList a4)
+            let authors = [a1] Import.++ (aToList a2) Import.++ (aToList a3) Import.++ (aToList a4)
             case not (fileContentType fi == "application/pdf") of
                 True -> do
                     setMessage "File must be a PDF"
@@ -42,10 +44,10 @@ postUploadR = do
                     fileBytes <- runResourceT $ fileSource fi $$ sinkLbs
                     -- We get the author ids first so that we can fail if some email was incorrect before adding the paper
                     authorIds  <- mapM (getUserForUsername UploadR) authors
-                    let authorsAndIds = zip authors authorIds
+                    let authorsAndIds = Import.zip authors authorIds
                     paperId <- runDB $ insert $ Paper uid (fileName fi)
                             title (unTextarea abstract)
-                                 (S.pack . L.unpack $ fileBytes) False False
+                                 (S.pack Import.. L.unpack $ fileBytes) False False
                     _ <- runDB $ mapM (\(author, Entity aUid _a) -> insert_ $ Author author aUid paperId) authorsAndIds
                     case mConflicts of
                         Just conflicts -> do

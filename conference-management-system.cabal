@@ -189,3 +189,4 @@ test-suite test
                  , network-uri 
                  , http-types 
                  , wai-extra
+                 , text                          >= 0.11       && < 2.0

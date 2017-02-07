@@ -184,7 +184,7 @@ instance Yesod App where
     isAuthorized (ReadyR p)_ = isReadyAuthenticated p
     isAuthorized SetPhaseR _ = isPcAuthenticated
     isAuthorized (FinalDecisionR _ _) _ = isPcAuthenticated
-    isAuthorized SearchSuggestR _ = return Authorized
+    isAuthorized SearchSuggestR _ = isAuthenticated
     isAuthorized (ViewReviewR p) _ = isViewReviewAuthenticated p 
 
     -- This function creates static content files in the static folder

@@ -18,3 +18,4 @@ cabal.sandbox.config
 *.keter
 client_session_key.aes
 .env
+.liquid

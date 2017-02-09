@@ -10,6 +10,7 @@ User
     pc Bool
     deriving Show
     deriving Eq
+    deriving Ord
 Paper
     owner UserId 
     filepath Text 

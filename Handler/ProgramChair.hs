@@ -8,7 +8,7 @@ import qualified Database.Esqueleto as E
 import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 
 data AddReviewerForm = AddReviewerForm 
-    { userName :: Text
+    { userId :: Key User
     }
 
 data AssignPaperForm = AssignPaperForm
@@ -22,11 +22,11 @@ data SetPhaseForm = SetPhaseForm
 getProgramChairR :: Handler Html
 getProgramChairR = do 
     reviewers <- getReviewers
+    reviewerOpts <- U.reviewerOpts
     papersForReviewers <- mapM getPapersForReviewer reviewers
     Entity _currentPhaseId currentPhase <- getCurrentPhase
     let reviewersAndPapers = zip reviewers papersForReviewers
-    (formWidget, formEnctype) <- generateFormPost addReviewerForm
-    reviewerOpts <- U.reviewerOpts
+    (formWidget, formEnctype) <- generateFormPost $ addReviewerForm reviewerOpts
     paperOpts <- U.paperOpts
     (assignFormWidget, assignFormEnctype) <-
         generateFormPost $ assignPaperForm reviewerOpts paperOpts 
@@ -36,10 +36,10 @@ getProgramChairR = do
 
 postProgramChairR :: Handler Html
 postProgramChairR = do
-    ((addResult, _), _) <- runFormPost addReviewerForm 
+    reviewerOpts <- U.reviewerOpts
+    ((addResult, _), _) <- runFormPost $ addReviewerForm reviewerOpts 
     case addResult of
-        FormSuccess (AddReviewerForm userName) -> do
-            Entity uid _user <- getUserForUsername ProgramChairR userName
+        FormSuccess (AddReviewerForm uid) -> do
             runDB $ update uid [UserReviewer =. True]
             setMessage "Review Saved"
             redirect ProgramChairR
@@ -48,9 +48,9 @@ postProgramChairR = do
             redirect $ ProgramChairR
     
 
-addReviewerForm :: Form AddReviewerForm
-addReviewerForm = renderBootstrap3 BootstrapBasicForm $ AddReviewerForm 
-    <$> areq textField "Add Reviewer" Nothing 
+addReviewerForm :: [(Text, Key User)] -> Form AddReviewerForm
+addReviewerForm reviewers = renderBootstrap3 BootstrapBasicForm $ AddReviewerForm 
+    <$> areq (selectFieldList reviewers) "Reviewer" Nothing 
 
 assignPaperForm :: [(Text, Key User)] -> [(Text, Key Paper)] -> Form AssignPaperForm
 assignPaperForm reviewers papers = renderBootstrap3 BootstrapBasicForm $ AssignPaperForm 

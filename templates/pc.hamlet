@@ -1,4 +1,6 @@
 <div .ui.container>
+    <h1> Downloads
+    <a href=@{TarPapersR}> Download all papers
     <h1> Phases
     <p>
       Current Phase: #{show $ currentPhasePhase currentPhase}

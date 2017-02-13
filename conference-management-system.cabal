@@ -40,6 +40,7 @@ library
                      Handler.SearchSuggest
                      Handler.ViewReview
                      Handler.DeletePaper
+                     Handler.TarPapers
                      Helpers.Heroku
 
     if flag(dev) || flag(library-only)
@@ -120,6 +121,7 @@ library
                  , email-validate
                  , yesod-json
                  , heroku
+                 , tar
 
 executable         conference-management-system
     if flag(library-only)

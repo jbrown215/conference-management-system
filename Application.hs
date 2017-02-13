@@ -49,6 +49,7 @@ import Handler.SetPhase
 import Handler.FinalDecision
 import Handler.SearchSuggest
 import Handler.ViewReview
+import Handler.DeletePaper
 
 import Web.Heroku (dbConnParams)
 import qualified Data.Text as T

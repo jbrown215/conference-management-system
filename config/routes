@@ -18,3 +18,4 @@
 /final-decision/#PaperId/#Bool FinalDecisionR POST
 /search-suggest SearchSuggestR GET
 /see-reviews/#PaperId ViewReviewR GET
+/delete/#PaperId DeletePaperR POST

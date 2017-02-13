@@ -14,7 +14,9 @@
                         <th>
                             Abstract 
                         <th> 
-                            Action
+                            Ready
+                        <th>
+                            Delete 
                     $forall (authors, Entity paperId paper) <- authorsAndPapers 
                         <tr>
                             <td>
@@ -37,6 +39,9 @@
                                         <input type="submit" value="Mark Not Ready">
                                     $else
                                         <input type="submit" value="Mark Ready">
+                            <td>
+                                <form method="post" action=@{DeletePaperR paperId}>
+                                    <input type="submit" value="Delete Paper">
     $if isDecisionPhase
         <h1>
             Accepted Papers

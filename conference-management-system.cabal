@@ -39,6 +39,7 @@ library
                      Handler.FinalDecision
                      Handler.SearchSuggest
                      Handler.ViewReview
+                     Handler.DeletePaper
                      Helpers.Heroku
 
     if flag(dev) || flag(library-only)

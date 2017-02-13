@@ -181,7 +181,8 @@ instance Yesod App where
     isAuthorized (ReviewPaperR p) _ = isReviewPaperAuthenticated p
     isAuthorized ProgramChairR _ = isPcAuthenticated
     isAuthorized AssignPaperR _ = isPcAuthenticated
-    isAuthorized (ReadyR p)_ = isReadyAuthenticated p
+    isAuthorized (ReadyR p)_ = isAuthorOnPaperAuthenticated p
+    isAuthorized (DeletePaperR p)_ = isAuthorOnPaperAuthenticated p
     isAuthorized SetPhaseR _ = isPcAuthenticated
     isAuthorized (FinalDecisionR _ _) _ = isPcAuthenticated
     isAuthorized SearchSuggestR _ = isAuthenticated
@@ -338,8 +339,8 @@ isPcAuthenticated = do
         Just (_id, user) -> if (userPc user) then Authorized else Unauthorized msg
 
 -- | Access function to determine if a user is authenticated for the paper
-isReadyAuthenticated :: PaperId -> Handler AuthResult
-isReadyAuthenticated p = do
+isAuthorOnPaperAuthenticated :: PaperId -> Handler AuthResult
+isAuthorOnPaperAuthenticated p = do
     pair <- maybeAuthPair
     let msg = "You do not have access to this page"
     case pair of

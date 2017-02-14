@@ -13,15 +13,11 @@ import qualified Data.Text as T
 -- | Attempt to get a paper given a Key. If no paper can be found, we return
 -- a 404 response.
 -- Lifty/LH: u:User
---           -> w:World 
---           -> {id:Key Paper | not (inPaperConflicts u w)} 
---           -> Tagged Handler Paper
--- UrFlow: 
--- policy sendClient (SELECT *
---         FROM conflicts, paper, user
---         WHERE conflicts.paper = paper.Id
---           AND conflicts.user <> user.Id
---           AND known(user.pass))
+--           -> id:Key Paper
+--           -> Handler Tagged {Paper | isAuthorized (DownloadR id)} <- this function is in Foundation.hs
+--
+--           This isAuthorized function may make a call to the DB. Is this something
+--           we are ok with?
 getPaperById :: Key Paper -> Handler Paper 
 getPaperById ident = do
     mfile <- runDB $ get ident
@@ -31,14 +27,7 @@ getPaperById ident = do
 
 -- | Gets papers for the currently logged in user
 -- Lifty/LH: u:User (implicit)
---           -> w:World
---           -> Tagged Handler [{paper:Entity Paper | paper ^. owner = user ^. id}]  
---              
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM paper, user
---         WHERE known(user.pass)
---           AND paper.owner = user.Id)
+--           -> Handler Tagged [{paper:Entity Paper | paper ^. owner = user ^. id}]  
 getPapers :: Handler [Entity Paper]
 getPapers = do
     (uid, _user) <- requireAuthPair
@@ -51,14 +40,9 @@ getPapers = do
 
 -- | Given some Entity Paper, returns the authors for the paper.
 -- Lifty/LH: u:User
---           -> {w:World | not (inPaperConflicts u w)}
---           -> {p: Tagged Entity Paper | p ^. owner = user ^. id} 
---           -> Tagged Handler [{a:Entity Author | p ^. id = a ^. id}]
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM paper, user, author
---         WHERE known(user.pass)
---           AND author.paper = paper.id
+--           -> p:Tagged Entity Paper
+--           -> Handler Tagged {[{a:Entity Author | p ^. id = a ^. id}] 
+--           | not (inPaperConflicts u p && paperOwner p = userUserId u}
 getAuthorListForPaper :: Entity Paper -> Handler [Entity Author]
 getAuthorListForPaper  (Entity paperId _paper) =
     runDB $ selectList [AuthorPaper ==. paperId] []
@@ -66,29 +50,16 @@ getAuthorListForPaper  (Entity paperId _paper) =
 -- | Gets all the reviewers in the system
 -- Note: This is not sensitive data
 -- Lifty/LH: u:User
---           -> w:World
---           -> Handler [{user:Entity User | isReviewer user w}]
+--           -> Handler [{user:Entity User | isReviewer user}]
 --
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM reviewer
---         WHERE known(user.pass))
 getReviewers :: Handler [Entity User]
 getReviewers = runDB $ selectList [UserReviewer ==. True] []
 
 -- | Gets all the papers for a reviewer
 -- Only the PC should be able to see this
 -- Paper should be ready
--- Lifty/LH: u:User
---           -> {w:World | isPC u w}
---           -> Entity User
---           -> Tagged Handler [(E.Value Text, E.Value (Key Paper)]
---
--- UrFlow:
--- policy sendClient(SELECT *
---          FROM user
---          WHERE known(user.pass)
---            AND user.isPc = 1)
+-- Lifty/LH: u:Entity User
+--           -> Tagged Handler {[(E.Value Text, E.Value (Key Paper)] | userPc u}
 getPapersForReviewer :: Entity User -> Handler [(E.Value Text, E.Value Bool, E.Value (Key Paper))]
 getPapersForReviewer (Entity uid _user) = do
     papers <- runDB
@@ -109,10 +80,6 @@ getPapersForReviewer (Entity uid _user) = do
 --           -> World
 --           -> Text
 --           -> Handler (Entity User)
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM user
---         WHERE (known user.pass)
 getUserForUsername :: (RedirectUrl site url, YesodPersist site, YesodPersistBackend site ~ SqlBackend) => url -> Text -> HandlerT site IO (Entity User)
 getUserForUsername route userName = do 
     users <- runDB $ selectList [UserEmailAddress ==. userName] []
@@ -125,14 +92,8 @@ getUserForUsername route userName = do
 -- | Gets the papers the currently logged in user was assigned to review.
 -- Lifty/LH: u:User
 --           -> w:World
---           -> Tagged Handler [{(review:E.Value (Key Review), ... |
+--           -> Handler Tagged [{(review:E.Value (Key Review), ... |
 --                  review ^. user = u ^. id }]
---
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM user, review
---         WHERE known(user.pass)
---           AND user.id = review.user
 getPapersToReview :: Handler [(E.Value (Key Review)
                              , E.Value PaperStatus
                              , E.Value Text
@@ -151,77 +112,6 @@ getPapersToReview = do
                     , review ^. ReviewStatus
                     , review ^. ReviewComments
                     , paper ^. PaperTitle
-                    , paper ^. PaperAbstract 
-                    )
-    return papers
-
--- | SEARCH METHODS
-
--- | A Import.filter for "LIKE" queries in SQL. Unfortunately, this does not come for
--- free in Yesod.Persistent as it is backend specific. As a result, we have to
--- use ugly string literals.
-like :: EntityField a Text -> Text -> Filter a 
-like field val = Filter field (Left $ T.concat ["%", val, "%"])
-                              (BackendSpecificFilter "like")
-
--- | Gets papers whose titles are a super string of the input string
--- Lift/LH: u:User
---          -> {w:World | inDecisionPhase w}
---          -> s:Text
---          -> Handler [{p:Entity Paper | p ^. accepted}]
---          
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM phase, paper, review
---         WHERE phase = 3
---           AND review.id = paper.id
---           AND review.status = Accepted
-getPapersWithTitle :: Text -> Handler [Entity Paper]
-getPapersWithTitle title = runDB $ selectList [like PaperTitle title] []
-
-getUsersWithName :: Text -> Handler [Entity User]
-getUsersWithName name = runDB $ selectList [like UserUsername name] []
-
--- | Gets papers with an abstract containing the input string
--- NOTE: policy is the same for all search functions
--- Lift/LH: u:User
---          -> {w:World | inDecisionPhase w}
---          -> s:Text
---          -> Handler [{p:Entity Paper | p ^. accepted}]
---          
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM phase, paper, review
---         WHERE phase = 3
---           AND review.id = paper.id
---           AND review.status = Accepted
-getPapersWithAbstract :: Text -> Handler [Entity Paper]
-getPapersWithAbstract abstract = runDB $ selectList [like PaperAbstract abstract] []
-
--- | Gets papers with authors matching the input string 
--- Lift/LH: u:User
---          -> {w:World | inDecisionPhase w}
---          -> s:Text
---          -> Handler [{p:Entity Paper | p ^. accepted}]
---          
--- UrFlow:
--- policy sendClient (SELECT *
---         FROM phase, paper, review
---         WHERE phase = 3
---           AND review.id = paper.id
---           AND review.status = Accepted
-getPapersWithAuthor :: Text 
-    -> Handler [(E.Value (Key Paper), E.Value Text, E.Value Text, E.Value Text)]
-getPapersWithAuthor authorName = do
-    papers <- runDB
-           $ E.select
-           $ E.from $ \(author `E.InnerJoin` paper) -> do
-                E.on $ (paper ^. PaperId E.==. author ^. AuthorPaper) E.&&.
-                  ((author ^. AuthorAuthor) `E.like` (E.%) E.++. E.val authorName E.++. (E.%))
-                return
-                    ( paper ^. PaperId
-                    , paper ^. PaperTitle
-                    , paper ^. PaperFilepath
                     , paper ^. PaperAbstract 
                     )
     return papers
@@ -245,3 +135,53 @@ getReviewsForPaper p = runDB $ selectList [ReviewPaper ==. p] []
 
 getAcceptedPapers :: Handler [Entity Paper]
 getAcceptedPapers = runDB $ selectList [PaperPcAccepted ==. True] []
+
+-- | SEARCH METHODS
+-- | These are hard to write policies for? The search page 
+-- | A Import.filter for "LIKE" queries in SQL. Unfortunately, this does not come for
+-- free in Yesod.Persistent as it is backend specific. As a result, we have to
+-- use ugly string literals.
+like :: EntityField a Text -> Text -> Filter a 
+like field val = Filter field (Left $ T.concat ["%", val, "%"])
+                              (BackendSpecificFilter "like")
+
+-- | Gets papers whose titles are a super string of the input string
+-- Lift/LH: u:User
+--          -> {w:World | inDecisionPhase w}
+--          -> s:Text
+--          -> Handler [{p:Entity Paper | p ^. accepted}]
+getPapersWithTitle :: Text -> Handler [Entity Paper]
+getPapersWithTitle title = runDB $ selectList [like PaperTitle title] []
+
+getUsersWithName :: Text -> Handler [Entity User]
+getUsersWithName name = runDB $ selectList [like UserUsername name] []
+
+-- | Gets papers with an abstract containing the input string
+-- NOTE: policy is the same for all search functions
+-- Lift/LH: u:User
+--          -> {w:World | inDecisionPhase w}
+--          -> s:Text
+--          -> Handler [{p:Entity Paper | p ^. accepted}]
+getPapersWithAbstract :: Text -> Handler [Entity Paper]
+getPapersWithAbstract abstract = runDB $ selectList [like PaperAbstract abstract] []
+
+-- | Gets papers with authors matching the input string 
+-- Lift/LH: u:User
+--          -> {w:World | inDecisionPhase w}
+--          -> s:Text
+--          -> Handler [{p:Entity Paper | p ^. accepted}]
+getPapersWithAuthor :: Text 
+    -> Handler [(E.Value (Key Paper), E.Value Text, E.Value Text, E.Value Text)]
+getPapersWithAuthor authorName = do
+    papers <- runDB
+           $ E.select
+           $ E.from $ \(author `E.InnerJoin` paper) -> do
+                E.on $ (paper ^. PaperId E.==. author ^. AuthorPaper) E.&&.
+                  ((author ^. AuthorAuthor) `E.like` (E.%) E.++. E.val authorName E.++. (E.%))
+                return
+                    ( paper ^. PaperId
+                    , paper ^. PaperTitle
+                    , paper ^. PaperFilepath
+                    , paper ^. PaperAbstract 
+                    )
+    return papers

@@ -41,6 +41,7 @@ library
                      Handler.ViewReview
                      Handler.DeletePaper
                      Handler.TarPapers
+                     Handler.RemoveReviewer
                      Helpers.Heroku
 
     if flag(dev) || flag(library-only)

@@ -20,3 +20,4 @@
 /see-reviews/#PaperId ViewReviewR GET
 /delete/#PaperId DeletePaperR POST
 /tarball TarPapersR GET
+/remove-reviewer RemoveReviewerR POST

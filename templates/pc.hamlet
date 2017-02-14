@@ -52,9 +52,18 @@
         <div .col-lg-6>
             <div .bs-callout bs-callout-info well>
                 <form .form-horizontal method=post action=@{ProgramChairR} enctype=#{formEnctype}>
+                    Add Reviewer
                     ^{formWidget}
                     <button .btn.btn-primary type="submit">
                        Add 
+    <div .row>
+        <div .col-lg-6>
+            <div .bs-callout bs-callout-info well>
+                <form .form-horizontal method=post action=@{RemoveReviewerR} enctype=#{removeFormEnctype}>
+                    Remove Reviewer
+                    ^{removeFormWidget}
+                    <button .btn.btn-primary type="submit">
+                      Remove 
     <div .row>
         <div .col-lg-6>
             <div .bs-callout bs-callout-info well>

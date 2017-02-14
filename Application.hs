@@ -51,6 +51,7 @@ import Handler.SearchSuggest
 import Handler.ViewReview
 import Handler.DeletePaper
 import Handler.TarPapers
+import Handler.RemoveReviewer
 
 import Web.Heroku (dbConnParams)
 import qualified Data.Text as T

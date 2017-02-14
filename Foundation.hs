@@ -181,6 +181,7 @@ instance Yesod App where
     isAuthorized (ReviewPaperR p) _ = isReviewPaperAuthenticated p
     isAuthorized ProgramChairR _ = isPcAuthenticated
     isAuthorized TarPapersR _ = isPcAuthenticated
+    isAuthorized RemoveReviewerR _ = isPcAuthenticated
     isAuthorized AssignPaperR _ = isPcAuthenticated
     isAuthorized (ReadyR p)_ = isAuthorOnPaperAuthenticated p
     isAuthorized (DeletePaperR p)_ = isAuthorOnPaperAuthenticated p

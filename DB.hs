@@ -174,7 +174,7 @@ like field val = Filter field (Left $ T.concat ["%", val, "%"])
 --           AND review.id = paper.id
 --           AND review.status = Accepted
 getPapersWithTitle :: Text -> Handler [Entity Paper]
-getPapersWithTitle title = runDB $ selectList [like PaperTitle title] []
+getPapersWithTitle title = runDB $ selectList [like PaperTitle title, PaperPcAccepted ==. True] []
 
 getUsersWithName :: Text -> Handler [Entity User]
 getUsersWithName name = runDB $ selectList [like UserUsername name] []
@@ -193,7 +193,7 @@ getUsersWithName name = runDB $ selectList [like UserUsername name] []
 --           AND review.id = paper.id
 --           AND review.status = Accepted
 getPapersWithAbstract :: Text -> Handler [Entity Paper]
-getPapersWithAbstract abstract = runDB $ selectList [like PaperAbstract abstract] []
+getPapersWithAbstract abstract = runDB $ selectList [like PaperAbstract abstract, PaperPcAccepted ==. True] []
 
 -- | Gets papers with authors matching the input string 
 -- Lift/LH: u:User
@@ -214,6 +214,7 @@ getPapersWithAuthor authorName = do
            $ E.select
            $ E.from $ \(author `E.InnerJoin` paper) -> do
                 E.on $ (paper ^. PaperId E.==. author ^. AuthorPaper) E.&&.
+                  (paper ^. PaperPcAccepted E.==. (E.val True)) E.&&.
                   ((author ^. AuthorAuthor) `E.like` (E.%) E.++. E.val authorName E.++. (E.%))
                 return
                     ( paper ^. PaperId

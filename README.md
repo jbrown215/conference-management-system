@@ -33,3 +33,6 @@ need your .env file to contain the following fields:
 ## Running Locally
 Yesod makes it really easy to run the project locally. All you'll need to do is run
 `stack exec yesod devel`, and then visit [http://localhost:3000/](http://localhost:3000/).
+
+## Liquid Haskell Verification
+We are using LiquidHaskell to verify certain properties of our system. To run the verification check, run `stack exec liquid <Filename>.hs`

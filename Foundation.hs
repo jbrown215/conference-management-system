@@ -67,6 +67,7 @@ data MenuTypes
 -- type Handler = HandlerT App IO
 -- type Widget = WidgetT App IO ()
 mkYesodData "App" $(parseRoutesFile "config/routes")
+{-@ type Test = {h:HandlerT site m a | true}@-}
 
 -- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)

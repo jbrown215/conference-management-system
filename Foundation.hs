@@ -22,7 +22,7 @@ import qualified Auth.Account as Auth
 import Yesod.Auth.Message (AuthMessage (InvalidLogin))
 import Yesod.Form.Jquery (YesodJquery)
 import Data.ConferencePhase
-import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs)
+import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs, withPlaceholder)
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -218,7 +218,7 @@ instance Yesod App where
 -- Search Bar Form
 searchForm :: Html -> MForm Handler (FormResult Text, Widget)
 searchForm = renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10))
-    $ areq (searchField False) (bfs ("" :: Text)) (Just "Search")
+    $ areq (searchField False) (withPlaceholder ("Search" :: Text) (bfs ("" :: Text))) Nothing
 
 -- Define breadcrumbs.
 instance YesodBreadcrumbs App where

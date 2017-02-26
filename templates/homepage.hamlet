@@ -3,7 +3,7 @@
       Uploaded Papers
 
     $if not $ null authorsAndPapers
-                <table .table >
+                <table .table.table-striped.table-hover>
                     <tr>
                         <th>
                             Paper
@@ -38,10 +38,10 @@
                                     $if (paperReady paper)
                                         <input type="submit" value="Mark Not Ready">
                                     $else
-                                        <input type="submit" value="Mark Ready">
+                                        <input class="btn btn-default btn-xs" type="submit" value="Mark Ready">
                             <td>
                                 <form method="post" action=@{DeletePaperR paperId}>
-                                    <input type="submit" value="Delete Paper">
+                                    <input class="btn btn-danger btn-xs" type="submit" value="Delete Paper">
     $if isDecisionPhase
         <h1>
             Accepted Papers

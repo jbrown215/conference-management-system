@@ -16,11 +16,11 @@
                         <a href="@{route}">#{label}
 
             <ul .nav.navbar-nav.navbar-right>
-                <li .navbar-search>
-                    <form method=get>
-                      <div .search-bar>
-                        ^{searchWidget}
-                      <input type=submit value=Search .search-button>
+               <li>
+                   <form .navbar-form method=get>
+                     <div .form-group>
+                       ^{searchWidget}
+                       <input type=submit value=Submit .search-button>
                 $forall MenuItem label route _ <- navbarRightFilteredMenuItems
                     <li :Just route == mcurrentRoute:.active>
                         <a href="@{route}">#{label}
@@ -29,14 +29,6 @@
 <!-- Page Contents -->
 
 <div .container>
-    $if not $ Just HomeR == mcurrentRoute
-        <ul .breadcrumb>
-            $forall bc <- parents
-                <li>
-                    <a href="@{fst bc}">#{snd bc}
-
-            <li .active>#{title}
-
     $maybe msg <- mmsg
       <div .alert.alert-info #message>#{msg}
 

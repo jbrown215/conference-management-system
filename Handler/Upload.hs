@@ -8,7 +8,7 @@ import qualified Data.ByteString.Lazy as L
 import Data.Conduit.Binary
 import qualified Data.ConferencePhase as C
 
-import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
+import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs)
 import Yesod.Form.Jquery (jqueryAutocompleteField)
 
 data FileForm = FileForm
@@ -75,12 +75,12 @@ getUploadR = do
         $(widgetFile "upload")
 
 uploadForm :: Text -> [(Text, Key User)] -> Form FileForm
-uploadForm email reviewerOpts = renderBootstrap3 BootstrapBasicForm $ FileForm
+uploadForm email reviewerOpts = renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10)) $ FileForm
     <$> fileAFormReq "Choose a file"
-    <*> areq textField "Paper Title" Nothing
-    <*> areq (jqueryAutocompleteField SearchSuggestR) "Author Email 1" (Just email) 
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 2" Nothing
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 3" Nothing
-    <*> aopt (jqueryAutocompleteField SearchSuggestR) "Author Email 4" Nothing
-    <*> areq textareaField "Abstract" Nothing
+    <*> areq textField (bfs ("Paper Title" :: Text)) Nothing
+    <*> areq (jqueryAutocompleteField SearchSuggestR) (bfs ("Author Email 1" :: Text)) (Just email) 
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) (bfs ("Author Email 2" :: Text)) Nothing
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) (bfs ("Author Email 3" :: Text)) Nothing
+    <*> aopt (jqueryAutocompleteField SearchSuggestR) (bfs ("Author Email 4" :: Text)) Nothing
+    <*> areq textareaField (bfs ("Abstract" :: Text)) Nothing
     <*> aopt (checkboxesFieldList reviewerOpts) "Conflicts" Nothing

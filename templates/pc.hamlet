@@ -6,7 +6,7 @@
       Current Phase: #{show $ currentPhasePhase currentPhase}
     <div .row>
         <div .col-lg-6>
-            <div .bs-callout bs-callout-info well>
+            <div class="well-bs component">
                 <form .form-horizontal method=post action=@{SetPhaseR} enctype=#{setPhaseFormEnctype}>
                     ^{setPhaseFormWidget}
                     <button .btn.btn-primary type="submit">

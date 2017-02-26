@@ -23,6 +23,7 @@ import qualified Auth.Account as Auth
 import Yesod.Auth.Message (AuthMessage (InvalidLogin))
 import Yesod.Form.Jquery (YesodJquery)
 import Data.ConferencePhase
+import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs)
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -100,9 +101,6 @@ instance Yesod App where
         _ <- case formRes of
             FormSuccess qstring -> redirect $ SearchR qstring 
             _ -> return ()
-
-        -- Get the breadcrumbs, as defined in the YesodBreadcrumbs instance.
-        (title, parents) <- breadcrumbs
 
         -- Define the menu items of the header.
         let mItems =
@@ -220,7 +218,8 @@ instance Yesod App where
 
 -- Search Bar Form
 searchForm :: Html -> MForm Handler (FormResult Text, Widget)
-searchForm = renderDivs $ areq (searchField False) "Search" Nothing
+searchForm = renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10))
+    $ areq (searchField False) (bfs ("" :: Text)) (Just "Search")
 
 -- Define breadcrumbs.
 instance YesodBreadcrumbs App where
@@ -260,11 +259,11 @@ instance YesodAuth App where
             Nothing -> UserError InvalidLogin
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins app = [
-                      accountPlugin
+    authPlugins _app = [
+                      accountPluginCustom
                       ] ++ extraAuthPlugins
         -- Enable authDummy login if enabled.
-        where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
+        where extraAuthPlugins = []
 
     authHttpManager = getHttpManager
 
@@ -304,6 +303,32 @@ instance AccountSendEmail App
                    \ to reset your password:\n" ++ url)
 
 instance YesodJquery App
+
+accountPluginCustom :: YesodAuthAccount db master => AuthPlugin master
+accountPluginCustom = AuthPlugin "account" (apDispatch accountPlugin) myLoginWidget
+
+
+myLoginWidget :: YesodAuthAccount db master => (Route Auth -> Route master) -> WidgetT master IO ()
+myLoginWidget tm = do
+    ((_,widget), enctype) <- liftHandlerT $ runFormPostNoToken $ Auth.customLoginForm 
+    [whamlet|
+    <div .container>
+        <h2> SIGBOVIK Conference Management System
+        <p> If you're trying to submit a paper, you're in the right place!
+        <div .col-lg-6>
+            <div .well.bs-component>
+                <form .form-horizontal method=post enctype=#{enctype} action=@{tm loginFormPostTargetR}>
+                    ^{widget}
+                    <div .form-group>
+                        <button .btn.btn-primary.col-lg-offset-2.col-lg-4 type=submit>Login
+                    <div .form-group>
+                        <a .col-lg-offset-2 href="@{tm newAccountR}">Register a new account
+                    <div .form-group>
+                        <a .col-lg-offset-2 href="@{tm resetPasswordR}">Forgot password?
+    |]
+
+
+loginStyle = [lucius| |]
 
 instance YesodAuthAccount (AccountPersistDB App User) App where
     runAccountDB = runAccountPersistDB

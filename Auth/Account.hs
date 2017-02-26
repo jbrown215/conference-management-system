@@ -5,6 +5,8 @@ import Yesod.Auth.Account
 import qualified Yesod.Auth.Message as Msg
 import qualified Data.Text as T
 
+import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs)
+
 getNewAccountR :: YesodAuthAccount db site 
                   => HandlerT Auth (HandlerT site IO) Html
 getNewAccountR = do
@@ -55,10 +57,11 @@ customNewAccountWidget :: YesodAuthAccount db master
 customNewAccountWidget tm = do
     ((_,widget), enctype) <- liftHandlerT $ runFormPost $ renderDivs customNewAccountForm
     [whamlet|
-<div .newaccountDiv>
-    <form method=post enctype=#{enctype} action=@{tm newAccountR}>
-        ^{widget}
-        <input type=submit value=_{Msg.Register}>
+<div .ui.container>
+    <div .newaccountDiv>
+        <form method=post enctype=#{enctype} action=@{tm newAccountR}>
+            ^{widget}
+            <input type=submit value=_{Msg.Register}>
 |]
 
 -- | Creates a new custom account
@@ -83,3 +86,7 @@ createNewCustomAccount (CustomNewAccountData email name pwd _) tm = do
         Right x -> return x
 
     return $ verifyR email key
+
+customLoginForm = renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10)) $ 
+    LoginData <$> areq (checkM checkValidUsername textField) (bfs ("Email Address" :: Text)) Nothing
+              <*> areq passwordField (bfs ("Password" :: Text)) Nothing

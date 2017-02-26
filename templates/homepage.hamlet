@@ -36,16 +36,15 @@
                             <td>
                                 <form method="post" action=@{ReadyR paperId}>
                                     $if (paperReady paper)
-                                        <input type="submit" value="Mark Not Ready">
+                                        <input class="btn btn-default btn-xs" type="submit" value="Mark Not Ready">
                                     $else
                                         <input class="btn btn-default btn-xs" type="submit" value="Mark Ready">
                             <td>
                                 <form method="post" action=@{DeletePaperR paperId}>
                                     <input class="btn btn-danger btn-xs" type="submit" value="Delete Paper">
-    $if isDecisionPhase
+    $if isDecisionPhase && (not (null acceptedAuthorsAndPapers))
         <h1>
             Accepted Papers
-        $if not $ null acceptedAuthorsAndPapers 
                     <table .table >
                         <tr>
                             <th>

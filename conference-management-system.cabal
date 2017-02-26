@@ -123,6 +123,7 @@ library
                  , yesod-json
                  , heroku
                  , tar
+                 , transformers
 
 executable         conference-management-system
     if flag(library-only)

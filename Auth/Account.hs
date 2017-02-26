@@ -4,6 +4,8 @@ import Import.NoFoundation
 import Yesod.Auth.Account
 import qualified Yesod.Auth.Message as Msg
 import qualified Data.Text as T
+import Control.Monad.Trans.RWS.Lazy
+import Text.Blaze.Internal
 
 import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), BootstrapGridOptions (..), renderBootstrap3, bfs)
 
@@ -20,7 +22,7 @@ postNewAccountR :: YesodAuthAccount db site
 postNewAccountR = do
     tm <- getRouteToParent
     mr <- lift getMessageRender
-    ((result, _), _) <- lift $ runFormPost $ renderDivs customNewAccountForm 
+    ((result, _), _) <- lift $ runFormPost $ customNewAccountForm 
     mdata <- case result of
                 FormMissing -> invalidArgs ["Form is missing"]
                 FormFailure msg -> return $ Left msg
@@ -44,24 +46,34 @@ data CustomNewAccountData = CustomNewAccountData {
 } deriving Show
 
 -- | Custom form for creating a new account
-customNewAccountForm :: (MonadHandler m, RenderMessage (HandlerSite m) FormMessage)
-                        => AForm m CustomNewAccountData
-customNewAccountForm = CustomNewAccountData <$> areq textField "Email" Nothing
-                                            <*> areq textField "Name" Nothing
-                                            <*> areq passwordField "Password" Nothing
-                                            <*> areq passwordField "Confirm Password" Nothing
+customNewAccountForm :: (MonadHandler m, RenderMessage (HandlerSite m) FormMessage) =>
+                              Text.Blaze.Internal.Markup
+                              -> Control.Monad.Trans.RWS.Lazy.RWST
+                                   (Maybe (Env, FileEnv), HandlerSite m, [Lang])
+                                   Enctype
+                                   Ints
+                                   m
+                                   (FormResult CustomNewAccountData, WidgetT (HandlerSite m) IO ())
+customNewAccountForm = 
+    renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10)) $ 
+                       CustomNewAccountData <$> areq textField (bfs ("Email" :: Text)) Nothing
+                                            <*> areq textField (bfs ("Name" :: Text)) Nothing
+                                            <*> areq passwordField (bfs ("Password" :: Text)) Nothing
+                                            <*> areq passwordField (bfs ("Confirm Password" :: Text)) Nothing
 -- | The registration form
 customNewAccountWidget :: YesodAuthAccount db master
                           => (Route Auth -> Route master)
                           -> WidgetT master IO ()
 customNewAccountWidget tm = do
-    ((_,widget), enctype) <- liftHandlerT $ runFormPost $ renderDivs customNewAccountForm
+    ((_,widget), enctype) <- liftHandlerT $ runFormPost $ customNewAccountForm
     [whamlet|
-<div .ui.container>
-    <div .newaccountDiv>
-        <form method=post enctype=#{enctype} action=@{tm newAccountR}>
-            ^{widget}
-            <input type=submit value=_{Msg.Register}>
+<div .container>
+    <h2> Create an Account
+    <div .col-lg-6>
+        <div .well.bs-component>
+            <form .form-horizontal method=post enctype=#{enctype} action=@{tm newAccountR}>
+                ^{widget}
+                <input .btn.btn-primary type=submit value=_{Msg.Register}>
 |]
 
 -- | Creates a new custom account
@@ -87,6 +99,11 @@ createNewCustomAccount (CustomNewAccountData email name pwd _) tm = do
 
     return $ verifyR email key
 
-customLoginForm = renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10)) $ 
+customLoginForm :: (MonadHandler m, YesodAuthAccount db (HandlerSite m)) =>
+                    Markup
+                    -> RWST (Maybe (Env, FileEnv), HandlerSite m, [Lang])
+                        Enctype Ints m (FormResult LoginData, WidgetT (HandlerSite m) IO ())
+customLoginForm = 
+    renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColLg 2) (ColSm 0) (ColLg 10)) $ 
     LoginData <$> areq (checkM checkValidUsername textField) (bfs ("Email Address" :: Text)) Nothing
               <*> areq passwordField (bfs ("Password" :: Text)) Nothing

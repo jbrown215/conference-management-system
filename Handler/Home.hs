@@ -61,18 +61,32 @@ getPcUsers = do
                  }
 @-}
 
-{-@ filterPapers :: u:UserId -> [Paper] -> [{p:Paper | paperOwner p == u}] @-}
-filterPapers :: UserId -> [Paper] -> [Paper]
-filterPapers _u [] = []
-filterPapers u (x:xs) = if paperOwner x == u then x : (filterPapers u xs) else filterPapers u xs
 
-{-@ getPapersForUser :: u:UserId -> Handler [{p:Paper | paperOwner p == u}] @-}
+{-@ measure author :: UserId -> Paper -> Bool @-}
+{-@ assume isAuthor :: u:UserId -> p:Paper -> {v:Bool | v == author u p} @-}
+-- This seems to be a way to show relationships that can't be put into type signatures.
+-- It feels REALLY unsafe to have to assume that this is correct. It would be nice if
+-- We could find a sane and sound way to generate these functions. They happen when there is a 
+-- model in the DB that represents a relationship between other tables. Really, this
+-- function should only return true if there is some Author object where its author Id
+-- and its Paper id are equal to the input UserId and Paper. This will also be very
+-- expensive to do, since we will have to make a DB call for each paper.
+isAuthor :: UserId -> Paper -> Bool
+isAuthor p id = True
+
+{-@ filterPapers :: u:UserId -> [Paper] -> [{p:Paper | author u p}] @-}
+filterPapers :: UserId -> [Paper] -> [Paper]
+filterPapers _t [] = []
+filterPapers u (x:xs) = if (isAuthor u x) then x : (filterPapers u xs) else filterPapers u xs
+
+{-@ getPapersForUser :: u:UserId -> Handler [{p:Paper | author u p}] @-}
 getPapersForUser :: UserId -> Handler [Paper]
 getPapersForUser u = do
     papers <- runDB $ selectList [PaperOwner ==. u] []
     let papersMapped = Import.map (\(Entity _ x) -> x) papers
     let papersFiltered = filterPapers u papersMapped
     return papersFiltered
+
 
 {-@ checkPc :: Pc -> Bool @-}
 checkPc :: User -> Bool

@@ -8,7 +8,8 @@ import Import
 import DB
 import Data.ConferencePhase
 
-{-@ type Handler a = {h:HandlerT App IO a | true}@-}
+{-@ type Handler a = HandlerT App IO a @-}
+
 
 {-@ data Tagged a <p :: User->Bool> = Tagged (content :: a) @-}
 data Tagged a = Tagged a
@@ -71,8 +72,10 @@ getPcUsers = do
 -- function should only return true if there is some Author object where its author Id
 -- and its Paper id are equal to the input UserId and Paper. This will also be very
 -- expensive to do, since we will have to make a DB call for each paper.
+-- refinement reflection:
+-- provide a proof that selectList would give us true iff isAuthor holds.
 isAuthor :: UserId -> Paper -> Bool
-isAuthor p id = True
+isAuthor id p = True
 
 {-@ filterPapers :: u:UserId -> [Paper] -> [{p:Paper | author u p}] @-}
 filterPapers :: UserId -> [Paper] -> [Paper]
@@ -80,7 +83,7 @@ filterPapers _t [] = []
 filterPapers u (x:xs) = if (isAuthor u x) then x : (filterPapers u xs) else filterPapers u xs
 
 {-@ getPapersForUser :: u:UserId -> Handler [{p:Paper | author u p}] @-}
-getPapersForUser :: UserId -> Handler [Paper]
+getPapersForUser :: UserId -> HandlerT App IO [Paper]
 getPapersForUser u = do
     papers <- runDB $ selectList [PaperOwner ==. u] []
     let papersMapped = Import.map (\(Entity _ x) -> x) papers
@@ -88,11 +91,11 @@ getPapersForUser u = do
     return papersFiltered
 
 
-{-@ checkPc :: Pc -> Bool @-}
-checkPc :: User -> Bool
-checkPc u = userPc u
+{-@ checkPc :: User -> Handler <{\u -> false}> Bool @-}
+checkPc :: User -> Handler Bool
+checkPc u = return $ userPc u
 
-{-@ getHomeR :: Handler (Tagged Html) @-}
+{-@ getHomeR :: Handler <{\u -> true}> (Tagged Html) @-}
 getHomeR :: Handler (Tagged Html)
 getHomeR = do
     (_uid, user) <- requireAuthPair
@@ -104,7 +107,7 @@ getHomeR = do
     acceptedAuthorLists <- mapM getAuthorListForPaper acceptedPapers
     let authorsAndPapers = Import.zip authorLists papers
     let acceptedAuthorsAndPapers = Import.zip acceptedAuthorLists acceptedPapers
-    let _ = if userPc user then checkPc user else False
+    _ <- checkPc user
     pls <- defaultLayout $ do
         setTitle Import.. toHtml $ userUsername user <> "'s User page"
         $(widgetFile "homepage")

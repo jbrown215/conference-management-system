@@ -6,6 +6,7 @@ import Import
 import DB
 import qualified Database.Esqueleto as E
 
+{-@ invariant {v:AuthResult | isAuthorized v} @-}
 getReviewR :: Handler Html
 getReviewR = do
     papers <- getPapersToReview

@@ -10,6 +10,7 @@ import Data.ConferencePhase
 
 {-@ type Handler a = HandlerT App IO a @-}
 
+{-@ data variance HandlerT covariant covariant covariant contravariant @-}
 
 {-@ data Tagged a <p :: User->Bool> = Tagged (content :: a) @-}
 data Tagged a = Tagged a

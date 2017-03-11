@@ -4,6 +4,8 @@ data HandlerT site m a <p :: b -> Bool> = Yesod.Core.Types.HandlerT {
         unHandlerT :: Yesod.Core.Types.HandlerData site (Yesod.Core.Types.MonadRoute m) -> m a
         }
 
+data variance HandlerT covariant covariant covariant contravariant
+
 instance Monad HandlerT where 
  >>= :: forall <p :: c -> Bool, f:: a -> b -> Bool>. 
         x:Tagged <p> a

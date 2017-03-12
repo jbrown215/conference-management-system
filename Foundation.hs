@@ -89,6 +89,9 @@ instance Yesod App where
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
     yesodMiddleware = defaultYesodMiddleware
 
+    maximumContentLength _ (Just (UploadR)) = Just $ 15 * 1024 * 1024
+    maximumContentLength _ _ = Just $ 2 * 1024 * 1024
+
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage

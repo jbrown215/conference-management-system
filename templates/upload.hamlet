@@ -5,6 +5,8 @@
                 <div .well.bs-component>
                     <p>
                        Before submitting your paper, make sure all of your authors have an account so that you may add them as authors by email below.
+                    <p>
+                       We allow uploads of up to 15 MB in size, but large files may take a few minutes to upload. If you have any issues making a submission, please contact the organizers at sigbovik@gmail.com.
                     <form .form-horizontal method=post action=@{UploadR} enctype=#{formEnctype}>
                         <fieldset>
                             ^{formWidget}

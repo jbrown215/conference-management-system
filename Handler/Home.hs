@@ -1,6 +1,7 @@
 {-# Language OverloadedStrings #-}
 {-# Language FlexibleInstances #-}
 {-# Language TemplateHaskell #-}
+{-# Language EmptyDataDecls #-}
 
 module Handler.Home where
 
@@ -14,12 +15,38 @@ import Data.ConferencePhase
 
 {-@ data Tagged a <p :: User->Bool> = Tagged (content :: a) @-}
 data Tagged a = Tagged a
+data World
 
 instance ToContent (Tagged Html) where
     toContent (Tagged x) = toContent x
 
 instance ToTypedContent (Tagged Html) where
     toTypedContent (Tagged a) = toTypedContent a
+
+instance Functor Tagged where
+  fmap f (Tagged x) = Tagged (f x)
+
+instance Applicative Tagged where
+  pure  = Tagged
+  -- f (a -> b) -> f a -> f b 
+  (Tagged f) <*> (Tagged x) = Tagged (f x)
+
+instance Monad Tagged where
+  return x = Tagged x
+  (Tagged x) >>= f = f x 
+  (Tagged _) >>  t = t  
+  fail          = error
+
+{-@ instance Monad Tagged where 
+     >>= :: forall <p :: User -> Bool, f:: a -> b -> Bool>. 
+            x:Tagged <p> a
+         -> (u:a -> Tagged <p> (b <f u>))
+         -> Tagged <p> (b<f (content x)>); 
+     >>  :: x:Tagged a
+         -> Tagged b
+         -> Tagged b;
+     return :: forall <p :: User -> Bool>. a -> Tagged <p> a 
+  @-}
 
 {-@ measure isDecision @-}
 isDecision :: ConferencePhase -> Bool
@@ -92,11 +119,11 @@ getPapersForUser u = do
     return papersFiltered
 
 
-{-@ checkPc :: User -> Handler <{\u -> false}> Bool @-}
+{-@ checkPc :: User -> HandlerT <{\u -> true}> App IO Bool @-}
 checkPc :: User -> Handler Bool
 checkPc u = return $ userPc u
 
-{-@ getHomeR :: Handler <{\u -> true}> (Tagged Html) @-}
+{-@ getHomeR :: forall <p :: User -> Bool>. HandlerT <{\u -> true}> App IO (Tagged Html) @-}
 getHomeR :: Handler (Tagged Html)
 getHomeR = do
     (_uid, user) <- requireAuthPair

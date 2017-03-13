@@ -26,7 +26,7 @@ writeAllPapers = do
     return ()
   where 
     paperName :: Entity Paper -> Text
-    paperName (Entity pid paper) = 
+    paperName (Entity pid paper) = take 50 $
         "papers/" 
         ++ (toPathPiece pid)
         ++ "-"

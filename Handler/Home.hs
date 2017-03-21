@@ -8,45 +8,11 @@ module Handler.Home where
 import Import
 import DB
 import Data.ConferencePhase
+import Yesod.Core.Types (HandlerT (..))
 
-{-@ type Handler a = HandlerT App IO a @-}
-
-{-@ data variance HandlerT covariant covariant covariant contravariant @-}
-
-{-@ data Tagged a <p :: User->Bool> = Tagged (content :: a) @-}
-data Tagged a = Tagged a
 data World
-
-instance ToContent (Tagged Html) where
-    toContent (Tagged x) = toContent x
-
-instance ToTypedContent (Tagged Html) where
-    toTypedContent (Tagged a) = toTypedContent a
-
-instance Functor Tagged where
-  fmap f (Tagged x) = Tagged (f x)
-
-instance Applicative Tagged where
-  pure  = Tagged
-  -- f (a -> b) -> f a -> f b 
-  (Tagged f) <*> (Tagged x) = Tagged (f x)
-
-instance Monad Tagged where
-  return x = Tagged x
-  (Tagged x) >>= f = f x 
-  (Tagged _) >>  t = t  
-  fail          = error
-
-{-@ instance Monad Tagged where 
-     >>= :: forall <p :: User -> Bool, f:: a -> b -> Bool>. 
-            x:Tagged <p> a
-         -> (u:a -> Tagged <p> (b <f u>))
-         -> Tagged <p> (b<f (content x)>); 
-     >>  :: x:Tagged a
-         -> Tagged b
-         -> Tagged b;
-     return :: forall <p :: User -> Bool>. a -> Tagged <p> a 
-  @-}
+data Phase = Submission | Review | Rebuttal | Done
+  deriving Eq
 
 {-@ measure isDecision @-}
 isDecision :: ConferencePhase -> Bool
@@ -123,8 +89,8 @@ getPapersForUser u = do
 checkPc :: User -> Handler Bool
 checkPc u = return $ userPc u
 
-{-@ getHomeR :: forall <p :: User -> Bool>. HandlerT <{\u -> true}> App IO (Tagged Html) @-}
-getHomeR :: Handler (Tagged Html)
+{-@ getHomeR :: forall <p :: User -> Bool>. HandlerT <{\u -> userPc u}> App IO Html @-}
+getHomeR :: Handler Html
 getHomeR = do
     (_uid, user) <- requireAuthPair
     Entity _pid phase <- getCurrentPhase
@@ -136,7 +102,6 @@ getHomeR = do
     let authorsAndPapers = Import.zip authorLists papers
     let acceptedAuthorsAndPapers = Import.zip acceptedAuthorLists acceptedPapers
     _ <- checkPc user
-    pls <- defaultLayout $ do
+    defaultLayout $ do
         setTitle Import.. toHtml $ userUsername user <> "'s User page"
         $(widgetFile "homepage")
-    return (Tagged pls)

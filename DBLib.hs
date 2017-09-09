@@ -20,8 +20,8 @@ module DBLib where
   - to add more in after we figure out how to support these.
 
   Example queries and the refinements they should produce:
-  select [UserId ==. 3] :: {u:User | userId u == 3}
-  select [UserId >. 3, UserReviewer ==. true] :: {u:User | userId user > 3 && userReview user}
+  runDB $ select [UserId ==. 3] :: Handler {u:User | userId u == 3}
+  runDB $ select [UserId >. 3, UserReviewer ==. true] :: Handler {u:User | userId user > 3 && userReview user}
 
   Update doesn't return anything, but we should verify that any assignments happening here do indeed
   satisfy the refinements on the actual Haskell representation of the DB object:

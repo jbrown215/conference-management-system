@@ -29,8 +29,25 @@ module DBLib where
 -}
 import qualified Import as I
 
+select :: (I.PersistEntityBackend record ~ I.BaseBackend backend,
+           I.PersistEntity record, I.PersistQueryRead backend, I.MonadIO m) =>
+          [I.Filter record] -> I.ReaderT backend m [I.Entity record]
 select filters = I.selectList filters []
-update id up = I.update id up
 
+update :: (I.PersistEntityBackend record ~ I.BaseBackend backend,
+           I.PersistEntity record, I.MonadIO m,
+           I.PersistStoreWrite backend) =>
+          I.Key record -> [I.Update record] -> I.ReaderT backend m ()
+update = I.update
+
+insert :: (I.PersistEntityBackend record ~ I.BaseBackend backend,
+           I.PersistEntity record, I.MonadIO m,
+           I.PersistStoreWrite backend) =>
+          record -> I.ReaderT backend m (I.Key record)
 insert = I.insert
+
+delete :: (I.PersistEntityBackend record ~ I.BaseBackend backend,
+	    I.PersistEntity record, I.MonadIO m,
+	    I.PersistStoreWrite backend) =>
+	I.Key record -> I.ReaderT backend m ()
 delete = I.delete

@@ -3,7 +3,15 @@ extra-package-dbs: []
 packages:
 - '.'
 extra-deps:
-- smtps-gmail-1.3.2
-- yesod-json-1.2.0
+- aeson-0.11.3.0
+- directory-1.2.7.1
 - heroku-0.1.2.3
-resolver: lts-6.25
+- hoauth2-0.5.9
+- http-client-0.4.31.2
+- http-client-tls-0.2.4.1
+- http-conduit-2.1.11
+- load-env-0.1.1
+- smtps-gmail-1.3.2
+- yesod-auth-oauth2-0.2.2
+- yesod-json-1.2.0
+resolver: lts-8.9

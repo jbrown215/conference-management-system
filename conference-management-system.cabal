@@ -21,6 +21,7 @@ library
                      Settings
                      Settings.StaticFiles
                      DB
+                     DBLib
                      Util
                      Auth.Account
                      Data.PaperStatus
